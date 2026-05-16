@@ -30,6 +30,8 @@ func main() {
 		cfg.RedditUsername,
 		cfg.RedditPassword,
 		cfg.RedditUserAgent,
+		cfg.RedditTopWindow,
+		cfg.MaxPostAge,
 	)
 	store := storage.NewInMemoryStore()
 	deduper := dedup.New(store)
@@ -42,6 +44,7 @@ func main() {
 		store,
 		cfg.WorkDir,
 		cfg.MaxPipelineRetries,
+		cfg.FormatRetries,
 		cfg.RetryBackoff,
 		cfg.DownloadTimeout,
 		cfg.FormatTimeout,

@@ -27,6 +27,7 @@ type Pipeline struct {
 	store                  storage.Store
 	workDir                string
 	retries                int
+	formatRetries          int
 	retryBackoff           time.Duration
 	downloadTimeout        time.Duration
 	formatTimeout          time.Duration
@@ -42,6 +43,7 @@ func NewPipeline(
 	store storage.Store,
 	workDir string,
 	retries int,
+	formatRetries int,
 	retryBackoff time.Duration,
 	downloadTimeout time.Duration,
 	formatTimeout time.Duration,
@@ -53,9 +55,22 @@ func NewPipeline(
 	if retryBackoff <= 0 {
 		retryBackoff = 3 * time.Second
 	}
+	if formatRetries < 1 {
+		formatRetries = 2
+	}
 	return &Pipeline{
-		fetcher: fetcher, deduper: deduper, downloader: downloader, formatter: formatter, publisher: publisher, store: store,
-		workDir: workDir, retries: retries, retryBackoff: retryBackoff, downloadTimeout: downloadTimeout, formatTimeout: formatTimeout,
+		fetcher:                fetcher,
+		deduper:                deduper,
+		downloader:             downloader,
+		formatter:              formatter,
+		publisher:              publisher,
+		store:                  store,
+		workDir:                workDir,
+		retries:                retries,
+		formatRetries:          formatRetries,
+		retryBackoff:           retryBackoff,
+		downloadTimeout:        downloadTimeout,
+		formatTimeout:          formatTimeout,
 		uploadSourceVideoIsURL: uploadSourceVideoIsURL,
 	}
 }
@@ -158,7 +173,7 @@ func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) e
 		formatCtx, cancelFormat = context.WithTimeout(ctx, p.formatTimeout)
 		defer cancelFormat()
 	}
-	if err := retry(2, p.retryBackoff, func() error {
+	if err := retry(p.formatRetries, p.retryBackoff, func() error {
 		return p.formatter.ToReel(formatCtx, rawPath, reelPath)
 	}); err != nil {
 		_ = p.saveRecord(ctx, ranked, rawPath, "", "format_failed", "")

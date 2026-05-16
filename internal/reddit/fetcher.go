@@ -35,15 +35,23 @@ type Client struct {
 	username     string
 	password     string
 	userAgent    string
+	topWindow    string
+	maxPostAge   time.Duration
 
 	mu          sync.Mutex
 	token       string
 	tokenExpiry time.Time
 }
 
-func NewClient(httpClient *http.Client, clientID, clientSecret, username, password, userAgent string) *Client {
+func NewClient(httpClient *http.Client, clientID, clientSecret, username, password, userAgent, topWindow string, maxPostAge time.Duration) *Client {
 	if httpClient == nil {
 		httpClient = &http.Client{Timeout: 20 * time.Second}
+	}
+	if topWindow == "" {
+		topWindow = "hour"
+	}
+	if maxPostAge <= 0 {
+		maxPostAge = 2 * time.Hour
 	}
 	return &Client{
 		httpClient:   httpClient,
@@ -52,6 +60,8 @@ func NewClient(httpClient *http.Client, clientID, clientSecret, username, passwo
 		username:     username,
 		password:     password,
 		userAgent:    userAgent,
+		topWindow:    topWindow,
+		maxPostAge:   maxPostAge,
 	}
 }
 
@@ -64,7 +74,7 @@ func (c *Client) FetchTrending(ctx context.Context, subreddit string, limit int)
 		return nil, err
 	}
 
-	endpoint := fmt.Sprintf("https://oauth.reddit.com/r/%s/top?t=hour&limit=%d", url.PathEscape(subreddit), limit)
+	endpoint := fmt.Sprintf("https://oauth.reddit.com/r/%s/top?t=%s&limit=%d", url.PathEscape(subreddit), url.QueryEscape(c.topWindow), limit)
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, endpoint, nil)
 	if err != nil {
 		return nil, fmt.Errorf("create request: %w", err)
@@ -95,7 +105,7 @@ func (c *Client) FetchTrending(ctx context.Context, subreddit string, limit int)
 			continue
 		}
 		postAge := now.Sub(time.Unix(int64(d.CreatedUTC), 0))
-		if postAge > 2*time.Hour {
+		if postAge > c.maxPostAge {
 			continue
 		}
 		videoURL := d.URLOverriddenByDest

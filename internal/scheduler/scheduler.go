@@ -3,6 +3,7 @@ package scheduler
 import (
 	"context"
 	"fmt"
+	"log"
 
 	"github.com/robfig/cron/v3"
 )
@@ -19,7 +20,9 @@ func New() *Scheduler {
 
 func (s *Scheduler) Register(expr string, job Job) error {
 	_, err := s.cron.AddFunc(expr, func() {
-		_ = job(context.Background())
+		if err := job(context.Background()); err != nil {
+			log.Printf("scheduled job failed: %v", err)
+		}
 	})
 	if err != nil {
 		return fmt.Errorf("register cron job: %w", err)

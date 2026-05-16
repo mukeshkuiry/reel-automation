@@ -16,10 +16,13 @@ type Config struct {
 	RedditUsername         string
 	RedditPassword         string
 	RedditUserAgent        string
+	RedditTopWindow        string
+	MaxPostAge             time.Duration
 	InstagramAccessToken   string
 	InstagramBusinessID    string
 	FetchPerSubreddit      int
 	MaxPipelineRetries     int
+	FormatRetries          int
 	RetryBackoff           time.Duration
 	DownloadTimeout        time.Duration
 	FormatTimeout          time.Duration
@@ -38,10 +41,13 @@ func Load() Config {
 		RedditUsername:         os.Getenv("REDDIT_USERNAME"),
 		RedditPassword:         os.Getenv("REDDIT_PASSWORD"),
 		RedditUserAgent:        getenv("REDDIT_USER_AGENT", "reel-automation/1.0"),
+		RedditTopWindow:        getenv("REDDIT_TOP_WINDOW", "hour"),
+		MaxPostAge:             time.Duration(getenvInt("MAX_POST_AGE_MINUTES", 120)) * time.Minute,
 		InstagramAccessToken:   os.Getenv("INSTAGRAM_ACCESS_TOKEN"),
 		InstagramBusinessID:    os.Getenv("INSTAGRAM_BUSINESS_ID"),
 		FetchPerSubreddit:      getenvInt("FETCH_LIMIT", 25),
 		MaxPipelineRetries:     getenvInt("MAX_PIPELINE_RETRIES", 3),
+		FormatRetries:          getenvInt("FORMAT_RETRIES", 2),
 		RetryBackoff:           time.Duration(getenvInt("RETRY_BACKOFF_SECONDS", 3)) * time.Second,
 		DownloadTimeout:        time.Duration(getenvInt("DOWNLOAD_TIMEOUT_SECONDS", 120)) * time.Second,
 		FormatTimeout:          time.Duration(getenvInt("FORMAT_TIMEOUT_SECONDS", 120)) * time.Second,
