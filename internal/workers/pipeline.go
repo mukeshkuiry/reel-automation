@@ -3,6 +3,7 @@ package workers
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -108,6 +109,7 @@ func (p *Pipeline) Run(ctx context.Context, subreddits []string, fetchLimit int,
 			continue
 		}
 		if err := p.processPost(ctx, ranked); err != nil {
+			log.Printf("processing post %s failed: %v", ranked.Post.ID, err)
 			continue
 		}
 		return nil
@@ -216,7 +218,8 @@ func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) e
 }
 
 func sanitizeFileID(id string) string {
-	return safeIDPattern.ReplaceAllString(id, "")
+	sanitized := safeIDPattern.ReplaceAllString(id, "")
+	return filepath.Base(sanitized)
 }
 
 func (p *Pipeline) saveRecord(ctx context.Context, ranked ranking.RankedPost, rawPath, reelPath, status, mediaID string) error {

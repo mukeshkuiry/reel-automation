@@ -34,7 +34,7 @@ type Config struct {
 
 func Load() Config {
 	return Config{
-		Subreddits:             splitCSV(getenv("SUBREDDITS", "Funny,interestingasfuck,damnthatsinteresting,nextfuckinglevel")),
+		Subreddits:             splitCSV(getenv("SUBREDDITS", "funny,interestingasfuck,damnthatsinteresting,nextfuckinglevel")),
 		CronExpr:               getenv("CRON_EXPRESSION", "0 */2 * * *"),
 		WorkDir:                getenv("WORK_DIR", "tmp/videos"),
 		RedditClientID:         os.Getenv("REDDIT_CLIENT_ID"),

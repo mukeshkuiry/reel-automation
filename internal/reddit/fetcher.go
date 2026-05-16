@@ -105,6 +105,9 @@ func (c *Client) FetchTrending(ctx context.Context, subreddit string, limit int)
 			continue
 		}
 		postAge := now.Sub(time.Unix(int64(d.CreatedUTC), 0))
+		if postAge < 0 {
+			continue
+		}
 		if postAge > c.maxPostAge {
 			continue
 		}
