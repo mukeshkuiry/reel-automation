@@ -40,7 +40,7 @@ migrations/
 Environment variables:
 
 ```env
-SUBREDDITS=Funny,interestingasfuck,damnthatsinteresting,nextfuckinglevel
+SUBREDDITS=funny,interestingasfuck,damnthatsinteresting,nextfuckinglevel
 CRON_EXPRESSION=0 */2 * * *
 ENABLE_SCHEDULER=false
 
