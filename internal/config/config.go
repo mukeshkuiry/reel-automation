@@ -23,6 +23,7 @@ type Config struct {
 	FetchPerSubreddit      int
 	MaxPipelineRetries     int
 	FormatRetries          int
+	UploadRetries          int
 	RetryBackoff           time.Duration
 	DownloadTimeout        time.Duration
 	FormatTimeout          time.Duration
@@ -48,6 +49,7 @@ func Load() Config {
 		FetchPerSubreddit:      getenvInt("FETCH_LIMIT", 25),
 		MaxPipelineRetries:     getenvInt("MAX_PIPELINE_RETRIES", 3),
 		FormatRetries:          getenvInt("FORMAT_RETRIES", 2),
+		UploadRetries:          getenvInt("UPLOAD_RETRIES", 5),
 		RetryBackoff:           time.Duration(getenvInt("RETRY_BACKOFF_SECONDS", 3)) * time.Second,
 		DownloadTimeout:        time.Duration(getenvInt("DOWNLOAD_TIMEOUT_SECONDS", 120)) * time.Second,
 		FormatTimeout:          time.Duration(getenvInt("FORMAT_TIMEOUT_SECONDS", 120)) * time.Second,

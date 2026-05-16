@@ -28,6 +28,7 @@ type Pipeline struct {
 	workDir                string
 	retries                int
 	formatRetries          int
+	uploadRetries          int
 	retryBackoff           time.Duration
 	downloadTimeout        time.Duration
 	formatTimeout          time.Duration
@@ -44,6 +45,7 @@ func NewPipeline(
 	workDir string,
 	retries int,
 	formatRetries int,
+	uploadRetries int,
 	retryBackoff time.Duration,
 	downloadTimeout time.Duration,
 	formatTimeout time.Duration,
@@ -58,6 +60,9 @@ func NewPipeline(
 	if formatRetries < 1 {
 		formatRetries = 2
 	}
+	if uploadRetries < 1 {
+		uploadRetries = 5
+	}
 	return &Pipeline{
 		fetcher:                fetcher,
 		deduper:                deduper,
@@ -68,6 +73,7 @@ func NewPipeline(
 		workDir:                workDir,
 		retries:                retries,
 		formatRetries:          formatRetries,
+		uploadRetries:          uploadRetries,
 		retryBackoff:           retryBackoff,
 		downloadTimeout:        downloadTimeout,
 		formatTimeout:          formatTimeout,
@@ -186,7 +192,7 @@ func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) e
 		uploadVideoSource = reelPath
 	}
 	var mediaID string
-	err := retry(5, p.retryBackoff, func() error {
+	err := retry(p.uploadRetries, p.retryBackoff, func() error {
 		publishedID, err := p.publisher.Publish(ctx, uploadVideoSource, c)
 		if err != nil {
 			return err

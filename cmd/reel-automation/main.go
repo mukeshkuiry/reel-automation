@@ -45,6 +45,7 @@ func main() {
 		cfg.WorkDir,
 		cfg.MaxPipelineRetries,
 		cfg.FormatRetries,
+		cfg.UploadRetries,
 		cfg.RetryBackoff,
 		cfg.DownloadTimeout,
 		cfg.FormatTimeout,
