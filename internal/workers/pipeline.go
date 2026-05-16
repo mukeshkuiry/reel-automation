@@ -218,8 +218,7 @@ func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) e
 }
 
 func sanitizeFileID(id string) string {
-	sanitized := safeIDPattern.ReplaceAllString(id, "")
-	return filepath.Base(sanitized)
+	return safeIDPattern.ReplaceAllString(id, "")
 }
 
 func (p *Pipeline) saveRecord(ctx context.Context, ranked ranking.RankedPost, rawPath, reelPath, status, mediaID string) error {
