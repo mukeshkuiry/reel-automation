@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sync"
 	"time"
 
@@ -17,6 +18,8 @@ import (
 	"github.com/mukeshkuiry/reel-automation/internal/reddit"
 	"github.com/mukeshkuiry/reel-automation/internal/storage"
 )
+
+var safeIDPattern = regexp.MustCompile(`[^a-zA-Z0-9_-]`)
 
 type Pipeline struct {
 	fetcher                reddit.Fetcher
@@ -157,8 +160,12 @@ func (p *Pipeline) fetchAndRank(ctx context.Context, subreddits []string, fetchL
 }
 
 func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) error {
-	rawPath := filepath.Join(p.workDir, ranked.Post.ID+"_raw.mp4")
-	reelPath := filepath.Join(p.workDir, ranked.Post.ID+"_reel.mp4")
+	safeID := sanitizeFileID(ranked.Post.ID)
+	if safeID == "" {
+		return fmt.Errorf("invalid reddit post id %q", ranked.Post.ID)
+	}
+	rawPath := filepath.Join(p.workDir, safeID+"_raw.mp4")
+	reelPath := filepath.Join(p.workDir, safeID+"_reel.mp4")
 
 	downloadCtx := ctx
 	var cancelDownload context.CancelFunc
@@ -206,6 +213,10 @@ func (p *Pipeline) processPost(ctx context.Context, ranked ranking.RankedPost) e
 	}
 
 	return p.saveRecord(ctx, ranked, rawPath, reelPath, "uploaded", mediaID)
+}
+
+func sanitizeFileID(id string) string {
+	return safeIDPattern.ReplaceAllString(id, "")
 }
 
 func (p *Pipeline) saveRecord(ctx context.Context, ranked ranking.RankedPost, rawPath, reelPath, status, mediaID string) error {
